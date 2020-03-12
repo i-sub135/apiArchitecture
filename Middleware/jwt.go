@@ -1,15 +1,26 @@
 package middleware
 
 import (
+	"log"
+	"os"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/joho/godotenv"
 )
 
-// CreateJwt -- create jwt Code
-func CreateJwt(userID uint, email, secret string) (string, error) {
+func secret() string {
+	er := godotenv.Load()
+	if er != nil {
+		log.Fatal("Main func --> Error loading .env file")
+	}
 
-	keys := []byte(secret)
+	return os.Getenv("SECRET_KEY")
+}
+
+// CreateJwt -- create jwt
+func CreateJwt(userID uint, email string) (string, error) {
+	keys := []byte(secret())
 
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := make(jwt.MapClaims)
@@ -25,10 +36,8 @@ func CreateJwt(userID uint, email, secret string) (string, error) {
 }
 
 // ValidJwt -- validasi
-func ValidJwt(MyToken, secret string) (jwt.MapClaims, error) {
-
-	keys := secret
-
+func ValidJwt(MyToken string) (jwt.MapClaims, error) {
+	keys := secret()
 	token, err := jwt.Parse(MyToken, func(token *jwt.Token) (interface{}, error) {
 		return []byte(keys), nil
 	})
